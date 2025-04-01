@@ -27,7 +27,7 @@ from copy import copy
 import kornia
 from scipy import stats
 # from corruptions import *
-from PIL import Image
+from PIL import Image, ImageEnhance
 import matplotlib.pyplot as plt
 
 import os
@@ -587,6 +587,8 @@ class Draw_preds:
         # print('no')
         TT = time.time()
         Im = Image.open('to_predict_mnist.png').convert('L').resize((28,28),Image.BILINEAR)
+        # enhancer = ImageEnhance.Contrast(Im)
+        # Im = enhancer.enhance(10.0) 
         Im = torch.from_numpy(np.asarray(Im)).float()/255.0
         
         
