@@ -606,7 +606,7 @@ class Draw_preds:
         ''
        
         self.text1.set_text('CNN-I:'+str(out_normal_inv.cpu().numpy()))
-        self.text2.set_text('SRN:'+str(out_srn.cpu().numpy()))
+        self.text2.set_text('GMU:'+str(out_srn.cpu().numpy()))
         self.text3.set_text('CNN:'+str(out_normal.cpu().numpy()))
         fig.canvas.draw_idle()
         
@@ -685,8 +685,8 @@ if __name__ == "__main__":
     
     
     
-    text1 = fig.text(0,0.9,'SRN-5:',fontsize=40)
-    text2 = fig.text(0.4,0.9,'SRN-3:',fontsize=40)
+    text1 = fig.text(0,0.9,'CNN-I:',fontsize=40)
+    text2 = fig.text(0.4,0.9,'GMU:',fontsize=40)
     text3 = fig.text(0.8,0.9,'CNN:',fontsize=40)
     # plt.tight_layout()
     callback = Draw_preds(text1,text2,text3)

@@ -906,7 +906,7 @@ class Draw_preds:
         out_normal_inv,ll = predict_sample(self.net,Im.cuda(),20,'weighted',min_scale=0.8)
         
         self.text1.set_text('CNN-I:'+str(label_dict[int(out_normal_inv.cpu().numpy())]))
-        self.text2.set_text('SRN:'+str(label_dict[int(out_srn.cpu().numpy())]))
+        self.text2.set_text('GMU:'+str(label_dict[int(out_srn.cpu().numpy())]))
         self.text3.set_text('CNN:'+str(label_dict[int(out_normal.cpu().numpy())]))
         fig.canvas.draw_idle()
         
@@ -1013,8 +1013,8 @@ if __name__ == "__main__":
     
     
     
-    text1 = fig.text(0,0.9,'SRN-5:',fontsize=30)
-    text2 = fig.text(0.4,0.9,'SRN-3:',fontsize=30)
+    text1 = fig.text(0,0.9,'CNN-I:',fontsize=30)
+    text2 = fig.text(0.4,0.9,'GMU:',fontsize=30)
     text3 = fig.text(0.75,0.9,'CNN:',fontsize=30)
     # plt.tight_layout()
     callback = Draw_preds(text1,text2,text3)
