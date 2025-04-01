@@ -27,8 +27,9 @@ from copy import copy
 import kornia
 from scipy import stats
 # from corruptions import *
-from PIL import Image
+from PIL import Image, ImageEnhance
 import matplotlib.pyplot as plt
+import shutil
 
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -523,95 +524,22 @@ import cv2
 
 
 
-class Draw_preds:
-    def __init__(self,text1,text2,text3):
-        super(Draw_preds, self).__init__()
-        self.text1 = text1
-        self.text2 = text2
-        self.text3 = text3 
-        dataset_name = "MNIST"
-        batch_size = 200
-        init_rate = 0.0005
-        init_rate_crank = 0.01
-        labelnoise = 0
-        input_noise = 0 
-        input_noise_array = [0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35]
-        epsilons = [ .05]
-        srn_epsilons = [0.0001,0.00001,0]
-        
-        step_size = 10
-        gamma_learning = 0.8
-        total_epoch = 400
-        total_epoch_crank = 100
-        decay_normal = 0  
-        decay_regress = 0
-        decay_errors = 0
-        dropping = 0 
-        
-        decay_normal_crank = 0 
-        
-        layers = [25,50]
-        kernels = [5,3]
-        layers_crank = []
-        
-        training_size = 60000
-        mode = 'regress_batch'
-        use_bn = True
-        rescale = 1.0
-        rank_convert = False
-        input_channels = 1
-        global DEGREES
-        DEGREE = [1,8]
-        alpha=0.2
+# Define input and output directories
 
-        self.net2 = Net_vanilla_CNN_convert3(input_channels,layers,kernels,srn_epsilons,decay_regress,decay_errors,use_bn=use_bn,dropping=dropping)
-        self.net = Net_vanilla_CNN_normal(input_channels,layers,kernels,srn_epsilons,decay_regress,decay_errors,use_bn=use_bn,dropping=dropping)
-        
-        
-        
-        self.net1 = Net_vanilla_CNN_convert3(input_channels,layers,kernels,srn_epsilons,decay_regress,decay_errors,use_bn=use_bn,dropping=dropping)
-        self.net1.load_state_dict(torch.load('CNN_convert_3slice_1degree_MNIST_[3, 8]degree_300epochs_[25, 50]layers60000data.h5',weights_only=True))
-        self.net.load_state_dict(torch.load('CNN_normal_MNIST_[3, 8]degree_200epochs_[25, 50]layers60000data.h5',weights_only=True))
-        self.net2.load_state_dict(torch.load('CNN_convert_3slice_1degree_MNIST_[3, 8]degree_300epochs_[25, 50]layers60000data.h5',weights_only=True))
-        
-        
-        self.net1 = self.net1.eval()
-        self.net = self.net.eval()
-        self.net2 = self.net2.eval()
-        
-    
-    
-    
-    def next(self, event):
-        # plt.text ()s
-        # print('no')
-        TT = time.time()
-        Im = Image.open('to_predict_mnist.png').convert('L').resize((28,28),Image.BILINEAR)
-        
-        Im = torch.from_numpy(np.asarray(Im)).float()/255.0
-        
-        
-        ax.imshow(Im)
-        fig.canvas.draw_idle()
-        # plt.pause(0.0001)
-        # plt.imshow(Im)
-        # self.fig.plot(Im)
-        
-        out_srn,b1 = predict_sample(self.net1,Im.cuda(),20,'weighted',min_scale=0.8)
-        out_srn2,b2 = predict_sample(self.net2,Im.cuda(),20,'weighted',min_scale=0.8)
-        
-        out_joint = torch.argmax(b1+b2)
-        out_normal,ll = predict_sample(self.net,Im.cuda(),20,'voting',min_scale=0.8)
-        Im = 1- Im
-        out_normal_inv,ll = predict_sample(self.net,Im.cuda(),20,'voting',min_scale=0.8)
-        ''
-       
-        self.text1.set_text('CNN-I:'+str(out_normal_inv.cpu().numpy()))
-        self.text2.set_text('GMU:'+str(out_srn.cpu().numpy()))
-        self.text3.set_text('CNN:'+str(out_normal.cpu().numpy()))
-        fig.canvas.draw_idle()
-        
-        
+import tkinter as tk
+from tkinter import messagebox
+
+# Function to display the popup message
+def show_popup():
+    root = tk.Tk()
+    root.withdraw()  # Hide the main tkinter window
+    messagebox.showinfo("Task Complete", 
+                        "All images in /Images/MNIST analyzed!\n"
+                        "Results stored to /Images/Results-CNN, /Images/Results-CNN_I, and /Images/Results-GMUCNN!")
+    root.destroy()  # Close the tkinter instance
+
+# Call the popup function
+
     
 
 if __name__ == "__main__":
@@ -679,25 +607,128 @@ if __name__ == "__main__":
                  9: "Ankle Boot"}
     
     
+    # Define variables
+    text1 = None
+    text2 = None
+    text3 = None
     
+    dataset_name = "MNIST"
+    batch_size = 200
+    init_rate = 0.0005
+    init_rate_crank = 0.01
+    labelnoise = 0
+    input_noise = 0
+    input_noise_array = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35]
+    epsilons = [0.05]
+    srn_epsilons = [0.01, 0.00001, 0]
     
-    fig, ax = plt.subplots(figsize=(10,10))
-    fig.subplots_adjust(bottom=0.2)
+    step_size = 10
+    gamma_learning = 0.8
+    total_epoch = 400
+    total_epoch_crank = 100
+    decay_normal = 0
+    decay_regress = 0
+    decay_errors = 0
+    dropping = 0
     
+    decay_normal_crank = 0
     
+    layers = [25, 50]
+    kernels = [5, 3]
+    layers_crank = []
     
-    text1 = fig.text(0,0.9,'CNN-I:',fontsize=40)
-    text2 = fig.text(0.4,0.9,'GMU:',fontsize=40)
-    text3 = fig.text(0.8,0.9,'CNN:',fontsize=40)
-    # plt.tight_layout()
-    callback = Draw_preds(text1,text2,text3)
-    axnext = fig.add_axes([0.81, 0.05, 0.1, 0.075])
-    bnext = Button(axnext, 'Update')
+    training_size = 60000
+    mode = 'regress_batch'
+    use_bn = True
+    rescale = 1.0
+    rank_convert = False
+    input_channels = 1
     
+    # Global variable for degrees
+    DEGREES = [1, 8]
+    alpha = 0.2
     
-    bnext.on_clicked(callback.next)
-    plt.ion() 
-    plt.show()
+    # Instantiate and initialize networks
+    net2 = Net_vanilla_CNN_convert3(input_channels, layers, kernels, srn_epsilons,
+                                    decay_regress, decay_errors, use_bn=use_bn, dropping=dropping)
+    net = Net_vanilla_CNN_normal(input_channels, layers, kernels, srn_epsilons,
+                                  decay_regress, decay_errors, use_bn=use_bn, dropping=dropping)
+    
+    # Load pre-trained weights
+    net.load_state_dict(torch.load('CNN_normal_MNIST_[3, 8]degree_200epochs_[25, 50]layers60000data.h5', weights_only=True))
+    net2.load_state_dict(torch.load('CNN_convert_3slice_1degree_MNIST_[3, 8]degree_300epochs_[25, 50]layers60000data.h5', weights_only=True))
+    
+    # Set networks to evaluation mode
+    net = net.eval()
+    net2 = net2.eval()
+
+    # Define input and output directories
+  
+# Define input and output directories
+ 
+# Define input and output directories
+
+    input_dir = './images/MNIST'
+    output_dir_cnn = './images/Results-CNN'
+    output_dir_cnn_i = './images/Results-CNN_I'
+    output_dir_gmucnn = './images/Results-GMUCNN'
+    
+
+    # Remove existing directories if they exist
+    for folder in [output_dir_cnn, output_dir_cnn_i, output_dir_gmucnn]:
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+            
+    # Create result directories if they don't exist
+    os.makedirs(output_dir_cnn, exist_ok=True)
+    os.makedirs(output_dir_cnn_i, exist_ok=True)
+    os.makedirs(output_dir_gmucnn, exist_ok=True)
+    
+    # Loop through each image in the input directory
+    for image_name in os.listdir(input_dir):
+        # Ensure it's a valid image file
+        if image_name.endswith(('.png', '.jpg', '.jpeg')):
+            image_path = os.path.join(input_dir, image_name)
+            
+            # Load the original image for saving later
+            original_image = Image.open(image_path)
+            
+            # Preprocess the image for predictions
+            Im = original_image.convert('L').resize((28, 28), Image.BILINEAR)
+            Im_tensor = torch.from_numpy(np.asarray(Im)).float() / 255.0
+    
+            # Predict using CNN, CNN_I (inverted inputs), and GMUCNN models
+            out_cnn, _ = predict_sample(net, Im_tensor.cuda(), 30, 'voting', min_scale=0.8)
+            Im_inverted = 1 - Im_tensor  # Invert the image for CNN_I
+            out_cnn_i, _ = predict_sample(net, Im_inverted.cuda(), 30, 'voting', min_scale=0.8)
+            out_gmucnn, _ = predict_sample(net2, Im_tensor.cuda(), 30, 'weighted', min_scale=0.8)
+    
+            # Get predicted classes
+            cnn_class = str(out_cnn.cpu().numpy())
+            cnn_i_class = str(out_cnn_i.cpu().numpy())
+            gmucnn_class = str(out_gmucnn.cpu().numpy())
+    
+            # Create class-based subdirectories
+            cnn_class_dir = os.path.join(output_dir_cnn, cnn_class)
+            cnn_i_class_dir = os.path.join(output_dir_cnn_i, cnn_i_class)
+            gmucnn_class_dir = os.path.join(output_dir_gmucnn, gmucnn_class)
+            os.makedirs(cnn_class_dir, exist_ok=True)
+            os.makedirs(cnn_i_class_dir, exist_ok=True)
+            os.makedirs(gmucnn_class_dir, exist_ok=True)
+    
+            # Save the original image in the appropriate class folders if it doesn't already exist
+            cnn_image_path = os.path.join(cnn_class_dir, image_name)
+            cnn_i_image_path = os.path.join(cnn_i_class_dir, image_name)
+            gmucnn_image_path = os.path.join(gmucnn_class_dir, image_name)
+            
+            if not os.path.exists(cnn_image_path):
+                original_image.save(cnn_image_path)
+            if not os.path.exists(cnn_i_image_path):
+                original_image.save(cnn_i_image_path)
+            if not os.path.exists(gmucnn_image_path):
+                original_image.save(gmucnn_image_path)
+    
+    show_popup()
 
     
         
