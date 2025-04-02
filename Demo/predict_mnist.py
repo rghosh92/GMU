@@ -640,7 +640,7 @@ if __name__ == "__main__":
     input_noise = 0 
     input_noise_array = [0,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35]
     epsilons = [ .05]
-    srn_epsilons = [0.0001,0.00001,0]
+    srn_epsilons = [0.01,0.00001,0]
     
     step_size = 10
     gamma_learning = 0.8
