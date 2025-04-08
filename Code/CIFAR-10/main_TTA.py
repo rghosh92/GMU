@@ -10,6 +10,7 @@ Created on Sun Aug 11 12:52:53 2024
 Created on Fri Aug  9 22:22:37 2024
 
 @author: User
+
 """
 
 # -*- coding: utf-8 -*-
@@ -642,11 +643,15 @@ def test_network_corrupted(net, dataset_name, corruptions,atan_convert):
     print("Mean accuracy:",np.mean(accuracy_list))
     return 0
 
-def test_network_corrupted_CIFAR(net, corruptions):
-    net = net.eval()
+def test_network_corrupted_CIFAR_TTA(net_orig, corruptions):
     accuracy_list = [] 
     for corruption in corruptions:
-        print(corruption)
+        net = deepcopy(net_orig)
+        net = net.train()
+        for layer in net.modules():
+            if isinstance(layer, nn.BatchNorm2d) or isinstance(layer, nn.BatchNorm1d):
+                layer.momentum = 0.9  # Update momentum for faster adaptation
+        # print(corruption)
         gc.collect()
         torch.cuda.empty_cache()
         data_test = np.load('./CIFAR-10-C/'+ corruption +'.npy')
@@ -660,7 +665,7 @@ def test_network_corrupted_CIFAR(net, corruptions):
         
         my_dataset_test = Dataset(dataset_name, data_test.cuda(), labels_test.cuda())
 
-        testloader = torch.utils.data.DataLoader(my_dataset_test, batch_size=50,
+        testloader = torch.utils.data.DataLoader(my_dataset_test, batch_size=200,
                                               shuffle=False,generator=torch.Generator(device='cuda'), num_workers=0)
         
         
@@ -670,10 +675,14 @@ def test_network_corrupted_CIFAR(net, corruptions):
             for i, data in enumerate(testloader, 0):
                 # get the inputs
                 inputs, labels = data
+                _ = net(inputs)
+                net = net.eval()
+                
                 all_outs = net(inputs)
                 predicted = torch.argmax(all_outs,1)
 
                 correct = correct + torch.sum(predicted == labels)
+                net = net.train()
         accuracy = float(correct) / float(len(labels_test))
         accuracy_list.append(accuracy)
         print("Corruption:",corruption, " Accuracy: ", accuracy)
@@ -799,28 +808,28 @@ if __name__ == "__main__":
     DEGREE = [3,8]
     alpha=0.2
     
-    net = VGG('VGG16-GMU',num_slices=3)
+    net = VGG('VGG16-GMU',num_slices=8)
     dataset,dataset_test,my_dataset,my_dataset_test,trainloader,testloader,testloader_adversary = load_data_and_generators(dataset_name,training_size,rescale,rank_convert,atanh_convert,labelnoise)
     
     # Training line is commented out here:
     # net,all_losses = train_network_normal(net,trainloader,testloader,my_dataset_test.labels, init_rate,total_epoch,decay_normal)
 
-    net.load_state_dict(torch.load('./VGG16_SRN3_CIFAR10.h5',weights_only=True))
-
+    net.load_state_dict(torch.load('./VGG16_SRN8_CIFAR10.h5',weights_only=True))
     net.mode = 'normal'
-    TT = time.time()
-    accuracy = test_network(net, testloader,  my_dataset_test.labels)
-    print(((time.time()-TT)/len(my_dataset_test.labels)))
+
+    test_network_corrupted_CIFAR_TTA(net, corruptions)
     
-    print('Accuracy:',accuracy)
+    # TT = time.time()
+    # accuracy = test_network(net, testloader,  my_dataset_test.labels)
+    # print(((time.time()-TT)/len(my_dataset_test.labels)))
+    
+    # print('Accuracy:',accuracy)
 #    
 
-    net = VGG('VGG16')
-    net.load_state_dict(torch.load('./VGG_CIFAR10.h5',weights_only=True))
-    TT = time.time()
-    accuracy = test_network(net, testloader,  my_dataset_test.labels)
-    print('Accuracy:',accuracy)
-    print(((time.time()-TT)/len(my_dataset_test.labels)))
+    # net = VGG('VGG16')
+    # net.load_state_dict(torch.load('./VGG_CIFAR10.h5',weights_only=True))
+    
+    # test_network_corrupted_CIFAR_TTA(net, corruptions)
   
 
 

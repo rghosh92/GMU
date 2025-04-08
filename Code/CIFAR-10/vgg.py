@@ -82,11 +82,11 @@ class VGG(nn.Module):
         self.features = self._make_layers(cfg[vgg_name])
         self.classifier = nn.Linear(512, 10)
         if self.vgg_name == 'VGG16-GMU':
-            self.gmu1 = GMULayer(3, 64, 3,padding=1,epsilon = 0.00001,num_slices=num_slices,degree=1)
+            self.srn1 = GMULayer(3, 64, 3,padding=1,epsilon = 0.001,num_slices=num_slices,degree=1)
 
     def forward(self, x):
         if self.vgg_name == 'VGG16-GMU':
-            x = self.gmu1(x)
+            x = self.srn1(x)
         out = self.features(x)
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
