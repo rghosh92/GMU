@@ -1,0 +1,255 @@
+Normalized CNN - MNIST
+
+
+
+Test Accuracy (Noise= 0 ): 0.9936
+Corruption: <function brightness at 0x000001EB62775160>  Accuracy:  0.9916
+Corruption: <function canny_edges at 0x000001EB627759D0>  Accuracy:  0.591
+Corruption: <function dotted_line at 0x000001EB62775790>  Accuracy:  0.9376
+Corruption: <function fog at 0x000001EB62773E50>  Accuracy:  0.9171
+Corruption: <function impulse_noise at 0x000001EB627739D0>  Accuracy:  0.7899
+Corruption: <function motion_blur at 0x000001EB62773D30>  Accuracy:  0.9172
+Corruption: <function shot_noise at 0x000001EB62773940>  Accuracy:  0.9611
+Corruption: <function spatter at 0x000001EB62775040>  Accuracy:  0.9113
+Corruption: <function zigzag at 0x000001EB62775820>  Accuracy:  0.7543
+Mean accuracy: 0.8634555555555555
+
+wit TTA:
+
+Test Accuracy (Noise= 0 ): 0.9937
+Corruption: <function brightness at 0x000001EB62775160>  Accuracy:  0.9915
+Corruption: <function canny_edges at 0x000001EB627759D0>  Accuracy:  0.9204
+Corruption: <function dotted_line at 0x000001EB62775790>  Accuracy:  0.9708
+Corruption: <function fog at 0x000001EB62773E50>  Accuracy:  0.9655
+Corruption: <function impulse_noise at 0x000001EB627739D0>  Accuracy:  0.9492
+Corruption: <function motion_blur at 0x000001EB62773D30>  Accuracy:  0.9535
+Corruption: <function shot_noise at 0x000001EB62773940>  Accuracy:  0.9738
+Corruption: <function spatter at 0x000001EB62775040>  Accuracy:  0.9417
+Corruption: <function zigzag at 0x000001EB62775820>  Accuracy:  0.8484
+Mean accuracy: 0.946088888888889
+
+
+
+Normalized CNN - FashionMNIST
+
+Test Accuracy (Noise= 0 ): 0.9133
+Corruption: <function brightness at 0x000001EB62775160>  Accuracy:  0.7704
+Corruption: <function canny_edges at 0x000001EB627759D0>  Accuracy:  0.5275
+Corruption: <function dotted_line at 0x000001EB62775790>  Accuracy:  0.8419
+Corruption: <function fog at 0x000001EB62773E50>  Accuracy:  0.7608
+Corruption: <function impulse_noise at 0x000001EB627739D0>  Accuracy:  0.4512
+Corruption: <function motion_blur at 0x000001EB62773D30>  Accuracy:  0.612
+Corruption: <function shot_noise at 0x000001EB62773940>  Accuracy:  0.6088
+Corruption: <function spatter at 0x000001EB62775040>  Accuracy:  0.7998
+Corruption: <function zigzag at 0x000001EB62775820>  Accuracy:  0.6638
+Mean accuracy: 0.6706888888888889
+
+
+with TTA
+
+
+0.09208117932081222
+Test Accuracy (Noise= 0 ): 0.9133
+Corruption: <function brightness at 0x000001EB62775160>  Accuracy:  0.7869
+Corruption: <function canny_edges at 0x000001EB627759D0>  Accuracy:  0.6082
+Corruption: <function dotted_line at 0x000001EB62775790>  Accuracy:  0.8666
+Corruption: <function fog at 0x000001EB62773E50>  Accuracy:  0.7911
+Corruption: <function impulse_noise at 0x000001EB627739D0>  Accuracy:  0.6983
+Corruption: <function motion_blur at 0x000001EB62773D30>  Accuracy:  0.7324
+Corruption: <function shot_noise at 0x000001EB62773940>  Accuracy:  0.7264
+Corruption: <function spatter at 0x000001EB62775040>  Accuracy:  0.8276
+Corruption: <function zigzag at 0x000001EB62775820>  Accuracy:  0.7629
+Mean accuracy: 0.7556
+
+
+k-ablation, MNIST
+
+Version: 0 slices
+0.004261299604417579
+Test Accuracy: 0.9837
+Mean accuracy: 0.8186888888888889
+Version: 1 slices
+0.017560279143272055
+Test Accuracy: 0.987
+Mean accuracy: 0.8519666666666666
+Version: 2 slices
+0.0008585123636134995
+Test Accuracy: 0.9876
+Mean accuracy: 0.8459555555555556
+Version: 3 slices
+0.0006147806927356215
+Test Accuracy: 0.9879
+Mean accuracy: 0.8798555555555557
+Version: 4 slices
+0.010474747521802783
+Test Accuracy: 0.9867
+Mean accuracy: 0.8594222222222222
+Version: 5 slices
+6.986017804592848e-05
+Test Accuracy: 0.9866
+Mean accuracy: 0.8692222222222222
+Version: 6 slices
+0.011232076900443816
+Test Accuracy: 0.9878
+Mean accuracy: 0.8567888888888889
+Version: 7 slices
+0.015597473122179508
+Test Accuracy: 0.9868
+Mean accuracy: 0.8809555555555556
+Version: Normal
+Accuracy: Normal/No Augmentation: 0.9833
+Mean accuracy: 0.5715666666666667
+
+
+
+k-ablation: Fashion-MNIST
+
+Version: 0 slices
+0.029909472386352717
+Test Accuracy: 0.8877
+Mean accuracy: 0.676188888888889
+
+Version: 1 slices
+0.009716165686186287
+Test Accuracy: 0.8921
+Mean accuracy: 0.6853
+
+Version: 2 slices
+0.016596597876778106
+Test Accuracy: 0.8924
+Mean accuracy: 0.6923333333333334
+
+Version: 3 slices
+0.009044036979576049
+Test Accuracy: 0.8957
+Mean accuracy: 0.6875777777777778
+
+Version: 4 slices
+0.00644430912045209
+Test Accuracy: 0.8911
+Mean accuracy: 0.6751999999999999
+
+Version: 5 slices
+0.01104536753060529
+Test Accuracy: 0.8892
+Mean accuracy: 0.6974222222222223
+
+Version: 6 slices
+0.00768746199934867
+Test Accuracy: 0.8958
+Mean accuracy: 0.6701555555555555
+
+Version: 7 slices
+0.007025255753924284
+Test Accuracy: 0.8915
+Mean accuracy: 0.6479666666666666
+
+Normal:
+Test Accuracy: 0.8822
+Mean accuracy: 0.4930555555555556
+
+
+
+
+MNIST Augmentation Experiments (half width network)
+
+
+Accuracy: Normal/No Augmentation: 0.9808
+Mean accuracy: 0.5605444444444445
+
+
+
+Accuracy: Normal/With Augmentation: 0.9871
+Mean accuracy: 0.6545777777777777
+
+Without brightness and contrast variation:
+
+Accuracy: Normal/With Augmentation: 0.9888
+Mean accuracy: 0.5581444444444443
+
+
+
+
+0.00036082982165680733
+Accuracy: GMU/No Augmentation: 0.9875
+Mean accuracy: 0.8764555555555557
+
+
+Accuracy: GMU/With Augmentation: 0.9869
+Mean accuracy: 0.8809222222222223
+
+
+Fashion-MNIST augmentation (temp)
+
+0.06301715910434723
+Accuracy: Normal/No Augmentation: 0.8862
+Mean accuracy: 0.49959999999999993
+0.0726958717405796
+
+
+Accuracy: Normal/With Augmentation: 0.8915
+Mean accuracy: 0.5384666666666668
+0.002349610466626473
+
+
+Accuracy: GMU/No Augmentation: 0.8969
+Mean accuracy: 0.6769111111111111
+
+
+
+Accuracy: GMU/With Augmentation: 0.8966
+Mean accuracy: 0.7201777777777778
+
+
+
+LATEST:
+
+
+0.24271803975105286
+Accuracy: Normal/With Augmentation: 0.8915
+Corruption: brightness, Accuracy: 0.2728
+Corruption: canny_edges, Accuracy: 0.4576
+Corruption: dotted_line, Accuracy: 0.7913
+Corruption: fog, Accuracy: 0.2011
+Corruption: impulse_noise, Accuracy: 0.2375
+Corruption: motion_blur, Accuracy: 0.7398
+Corruption: shot_noise, Accuracy: 0.6054
+Corruption: spatter, Accuracy: 0.8438
+Corruption: zigzag, Accuracy: 0.6969
+Mean accuracy: 0.5384666666666668
+0.17057402968406676
+Accuracy: GMU/With Augmentation: 0.8966
+Corruption: brightness, Accuracy: 0.8242
+Corruption: canny_edges, Accuracy: 0.4945
+Corruption: dotted_line, Accuracy: 0.8559
+Corruption: fog, Accuracy: 0.7636
+Corruption: impulse_noise, Accuracy: 0.5132
+Corruption: motion_blur, Accuracy: 0.7520
+Corruption: shot_noise, Accuracy: 0.6167
+Corruption: spatter, Accuracy: 0.8379
+Corruption: zigzag, Accuracy: 0.8236
+Mean accuracy: 0.7201777777777778
+0.06033967807888985
+Accuracy: Normal/With Augmentation: 0.9871
+Corruption: brightness, Accuracy: 0.7044
+Corruption: canny_edges, Accuracy: 0.3528
+Corruption: dotted_line, Accuracy: 0.7930
+Corruption: fog, Accuracy: 0.3793
+Corruption: impulse_noise, Accuracy: 0.2202
+Corruption: motion_blur, Accuracy: 0.9270
+Corruption: shot_noise, Accuracy: 0.9517
+Corruption: spatter, Accuracy: 0.9660
+Corruption: zigzag, Accuracy: 0.5968
+Mean accuracy: 0.6545777777777777
+0.04743692730553448
+Accuracy: GMU/With Augmentation: 0.9899
+Corruption: brightness, Accuracy: 0.9839
+Corruption: canny_edges, Accuracy: 0.4488
+Corruption: dotted_line, Accuracy: 0.8785
+Corruption: fog, Accuracy: 0.8184
+Corruption: impulse_noise, Accuracy: 0.8537
+Corruption: motion_blur, Accuracy: 0.9668
+Corruption: shot_noise, Accuracy: 0.9498
+Corruption: spatter, Accuracy: 0.8510
+Corruption: zigzag, Accuracy: 0.7599
+Mean accuracy: 0.8345333333333333
