@@ -182,7 +182,7 @@ class uRBF(nn.Module):
         self.init_weights()
         
     def init_weights(self):
-        self.weight_bias.data.uniform_(0, 0.5)
+        self.weight_bias.data.uniform_(-0.01, 0.01)
         self.sigma.data.uniform_(0.5, 1.5)
 
 
@@ -196,7 +196,7 @@ class uRBF(nn.Module):
         y = y - self.weight_bias.unsqueeze(0).repeat(y.shape[0], 1, 1)
     
         # squared distance
-        err = torch.mean(y**2, dim=2)
+        err = torch.sum(y**2, dim=2)
     
         # divide by 2 * sigma^2
         out = torch.exp(-err / (2 * self.sigma.squeeze()**2))
@@ -306,70 +306,110 @@ import seaborn as sns
 
 import math
 
-def hypersphere_volume(m, R):
-    return (math.pi ** (m / 2)) / math.gamma(m / 2 + 1) * (R ** m)
 
-def error_estimate(d, k, R, N):
+def v_unit_k(k):
+    return (math.pi ** (k / 2)) / math.gamma(k / 2 + 1)
 
-    V_dk = hypersphere_volume(d - k, R)
-    V_d  = hypersphere_volume(d, R)
-    N = N - (np.power(N,(k-1)/d)*k)
-    return V_dk - N * V_d
+def balanced_error_estimate(d, k, R, n):
 
-
-def balanced_error_estimate(d, k, R, N):
-
-    V_dk = hypersphere_volume(d - k, R)
-    V_d  = hypersphere_volume(d, R)
-    print(V_dk/V_d)
-    N = N - (np.power(N,(k-1)/d)*k)
-    return 0.5- (N * V_d/(2*V_dk))
-
-
+    v_k_1 = v_unit_k(k)
+    denominator = (R**2) * np.power(n * v_k_1, 2/k)
+    x = 1 / denominator
     
+    if x >= 1:
+        print(x)
+        return 0.5
+    
+    vol_ratio = np.power(1 - x, (d - k) / 2)
+    
+    epsilon = 0.5 * (1 - vol_ratio) 
+    
+    return epsilon
+
+
+# def balanced_error_estimate(d, k, R, n):
+#     # --- 1. Constants and Volumes ---
+#     v_k_1 = v_unit_k(k)
+#     v_d_1 = v_unit_k(d)
+#     v_dk_1 = v_unit_k(d - k)
+    
+#     # Critical n: when n spheres of radius R fill the k-dimensional unit lattice
+#     # V_k(R) = v_k_1 * R^k
+#     n_critical = 1 / (v_k_1 * (R**k))
+#     # --- 2. The Logic Switch ---
+#     if n < n_critical:
+#         print('he')
+#         # SPARSE REGIME: No significant overlaps. 
+#         # Error is based on the sum of individual volumes.
+#         ratio_single = (v_d_1 / v_dk_1) * (R**k)
+#         epsilon = 0.5 * (1 - n * ratio_single)
+#     else:
+#         print('ha')
+#         # SATURATED REGIME: Spheres overlap to form a slab.
+#         # We use the threshold height h* derived from the Poisson process.
+#         x = 1 / ((R**2) * np.power(n * v_k_1, 2/k))
+        
+#         if x < 1:
+#             vol_ratio_saturated = np.power(1 - x, (d - k) / 2)
+#             epsilon = 0.5 * (1 - vol_ratio_saturated)
+#         else:
+#             # If the density is still physically too low to bridge the height
+#             epsilon = 0.5
+
+#     return max(0.0, min(0.5, epsilon))
     
     # a = input("")
         
-        
-def gen_labels(inputs, input_loader,label_gen):
-    
-    all_labels = []
-    for batch in input_loader:
-        x = batch[0]                     # shape (200, n_dim)
-        y = label_gen.output(x).long()   # generate labels for this batch
-        all_labels.append(y)
-    
-    labels = torch.cat(all_labels, dim=0) 
-    
-    return labels
 
 
-def gen_loaders(n_samples, n_dim,batch_size,num_slices, threshold):
-    inputs_train = torch.rand(n_samples, n_dim) - 0.5
-    inputs_test = torch.rand(n_samples, n_dim) - 0.5
+def sample_hypersphere(n_samples, dim, r1=0.0, r2=1.0, device='cuda'):
+    x = torch.randn(n_samples, dim, device=device)
+    u = x / x.norm(dim=1, keepdim=True)
+    U = torch.rand(n_samples, device=device)
+    r = (r1**dim + U * (r2**dim - r1**dim))**(1.0/dim)
+    return u * r.unsqueeze(1)
+
+
+def generate_dataset(n_samples, n_dim, num_slices, threshold1, threshold2, device='cuda'):
+    n0 = n_samples // 2
+    n1 = n_samples - n0
+
+    slices0 = torch.rand(n0, num_slices, device=device) - 0.5
+    slices1 = torch.rand(n1, num_slices, device=device) - 0.5
+
+    rest0 = sample_hypersphere(n0, n_dim - num_slices, r1=0.0, r2=threshold1, device=device)
+    rest1 = sample_hypersphere(n1, n_dim - num_slices, r1=threshold1, r2=threshold2, device=device)
+
+    inputs0 = torch.cat([slices0, rest0], dim=1)
+    inputs1 = torch.cat([slices1, rest1], dim=1)
+
+    inputs = torch.cat([inputs0, inputs1], dim=0)
+    labels = torch.cat([torch.zeros(n0, device=device), torch.ones(n1, device=device)], dim=0)
+
+    perm = torch.randperm(n_samples, device=device)
+    return inputs[perm], labels[perm]
+
+def gen_loaders(n_samples, n_dim, batch_size, num_slices, threshold1, threshold2, device='cuda'):
+    inputs_train, labels_train = generate_dataset(n_samples, n_dim, num_slices, threshold1, threshold2, device=device)
+    inputs_test, labels_test = generate_dataset(n_samples, n_dim, num_slices, threshold1, threshold2, device=device)
     
-    input_dataset_train = TensorDataset(inputs_train)
-    input_loader_train = DataLoader(input_dataset_train, batch_size=200, shuffle=False)
+    # print(labels_train.mean())
+    # print(labels_test.mean())
     
-    input_dataset_test = TensorDataset(inputs_test)
-    input_loader_test = DataLoader(input_dataset_test, batch_size=200, shuffle=False)
-    
-    
-    
-    label_gen = SimpleGMUfc(input_channels=n_dim, output_channels=1, threshold=threshold,num_slices=num_slices)
-    
-    train_labels = gen_labels(inputs_train, input_loader_train, label_gen)
-    test_labels = gen_labels(inputs_test, input_loader_test, label_gen)
-    
-    print(torch.mean(train_labels.float()))
-    
-    dataset_train = PrecomputedDataset(inputs_train, train_labels)
-    trainloader = DataLoader(dataset_train, batch_size=batch_size, shuffle=True,generator=torch.Generator(device='cuda'), num_workers=0 )
-    
-    dataset_test = PrecomputedDataset(inputs_test, test_labels)
-    testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=True,generator=torch.Generator(device='cuda'), num_workers=0 )
+    dataset_train = PrecomputedDataset(inputs_train, labels_train)
+    dataset_test = PrecomputedDataset(inputs_test, labels_test)
+
+    gen = torch.Generator(device=device)
+
+    trainloader = DataLoader(dataset_train, batch_size=batch_size, shuffle=True,
+                             generator=gen, num_workers=0)
+    testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False,
+                            generator=gen, num_workers=0)
 
     return trainloader, testloader
+
+
+
 
 
 if __name__ == "__main__":
@@ -391,12 +431,13 @@ if __name__ == "__main__":
     #                'motion_blur','shot_noise','spatter','zigzag']
     
     
-    n_samples = 10000
-    n_dim = 10
-    threshold = 0.25
-    num_slices = [1,2,3,4,5]
-    hidden_dim_range = np.arange(10,200,10)
-    N_list = [1,10,100,200]
+    n_samples = 50000
+    n_dim = 50
+    threshold1 = 0.25
+    threshold2 = 0.26
+    # hidden_dim_range = np.arange(10,200,10)
+    num_slices = [0,1,2,3,4,5,6]
+    N_list = [1,10,50,100,200,500]
     output_dim = 1
     # Initialize your label generator
     
@@ -410,23 +451,55 @@ if __name__ == "__main__":
     decay_normal = 0 
     
     
-    final_list = []
+    final_errs = []
+    final_ests = []
+    # balan = [] 
+    
     # Test one batch
+    trainloader_list = []
+    testloader_list = []
+    
+    for i in range(len(num_slices)):
+        trainloader, testloader = gen_loaders(n_samples, n_dim, batch_size, num_slices[i], threshold1, threshold2)
+        trainloader_list.append(trainloader)
+        testloader_list.append(testloader)
+    
+    
     for N in N_list:
-        acc_list = [] 
+        err_list = []
+        est_list = [] 
         for i in range(len(num_slices)):
             
-            trainloader, testloader = gen_loaders(n_samples, n_dim,batch_size,num_slices[i], threshold)
+            # trainloader, testloader = gen_loaders(n_samples, n_dim,batch_size,num_slices[i], threshold)
+            # trainloader, testloader = gen_loaders(n_samples, n_dim, batch_size, num_slices[i], threshold1, threshold2)
+            
             net_rbf  = RBFMLP(n_dim, N, output_dim,num_slices[i])
-            net_rbf,all_losses = train_network_normal(net_rbf,trainloader,
+            net_rbf,all_losses = train_network_normal(net_rbf,trainloader_list[i],
                                                       init_rate,total_epoch,decay_normal)
                     
-            acc =  test_network(net_rbf,testloader)
-            print(balanced_error_estimate(n_dim, num_slices[i], threshold,N ))
-            print('Test Error GMU-MLP:', 1-acc)
-            acc_list.append(acc)
-        final_list.append(acc_list)
+            acc =  test_network(net_rbf,testloader_list[i])
+            if num_slices[i] > 0:
+                est = balanced_error_estimate(n_dim, num_slices[i], threshold1,N)
+            else:
+                est = 0 
+                
+            print(est)
+            # balan.append(est)
+            print('Test Error RBF-MLP-' + str(N)+' :', 1-acc)
+            err_list.append(1-acc)
+            est_list.append(est)
+            
+            
+        final_errs.append(err_list)
+        final_ests.append(est_list)
+
+
+
+
         
+    
+    
+    # plt.plot(balan)
         
             
     # corruptions = ['general']
