@@ -236,7 +236,7 @@ class DeeperGMUMLP(nn.Module):
     def forward(self, x):
         # Hidden layer
         out = self.gmu_in(x)
-        out = F.relu(self.bn1(out))
+        out = self.bn1(out)
         
         # Dropout
         # out = self.drop(out)
@@ -266,7 +266,7 @@ class GMUMLP(nn.Module):
     def forward(self, x):
         # Hidden GMU + BN
         out = self.gmu_in(x)
-        out = F.relu(self.bn1(out))
+        out = self.bn1(out)
         
         # Dropout
         # out = self.drop(out)
