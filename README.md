@@ -1,4 +1,4 @@
-Generative Matching Units
+## Generative Matching Units
 
 The 'Code' folder contains the files for training GMUs, RBFs and MLPs on all the datasets, including vision (CIFAR-10, SVHN, MNIST, F-MNIST and NORB) and Tabular. 
 
