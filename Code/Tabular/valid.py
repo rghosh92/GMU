@@ -519,16 +519,10 @@ if __name__ == "__main__":
             train_accuracy = test_network(net, trainloader, my_dataset.labels,0)
             accuracy_srn = test_network(net, testloader, my_dataset_test.labels, 0)
             results.append({
-            "Dataset": data_name,
             "Trial": i + 1,
             "Train Accuracy": train_accuracy,
             "Test Accuracy GMU": accuracy_srn
             })
-# -
-    # output_file = "accuracies.json"
-    # with open(output_file, "w") as f:
-    #     json.dump(results, f, indent=4)
-    
-    # print(f"Results written to {output_file}")
+
 
 

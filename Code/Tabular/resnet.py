@@ -331,6 +331,7 @@ class SimpleGMULayer(nn.Module):
 
     def forward(self, y):
             # print(self.weights.shape)
+            
             y = y.squeeze()
             if len(y.shape)==1:
                 y = y.unsqueeze(0)
@@ -338,22 +339,22 @@ class SimpleGMULayer(nn.Module):
             y = y + self.epsilon*torch.rand_like(y)
            
             y = y.unsqueeze(1).repeat(1,self.weight_bias.shape[0],1)
-            if self.Type != 'exp':
-                y = y - (self.weight_bias.unsqueeze(0).repeat(y.shape[0],1,1))
+            y = y - (self.weight_bias.unsqueeze(0).repeat(y.shape[0],1,1))
             
             if self.num_slices == 0:
                 err = torch.mean((y)**2,dim=2)
-                # err = err.unsqueeze(2).unsqueeze(3)
+                err = err.unsqueeze(2).unsqueeze(3)
                 return -err
                 
             
             if self.normalize == True and self.Type == 'exp':
                 y = y/(torch.std(y,2)).unsqueeze(2).repeat(1,1,self.weights.shape[1])
+                # y = F.normalize(y, p=2, dim=2)
             
             X = self.weights
             
-            if self.Type == 'exp':
-                X = torch.concat((torch.ones((X.shape[0],X.shape[1],1)), X),dim=2)
+            # if self.Type == 'exp':
+            #     X = torch.concat((torch.ones((X.shape[0],X.shape[1],1)), X),dim=2)
 
             
             X_cov = torch.einsum('bij,bki->bjk', X, X.permute(0,2,1))
@@ -368,11 +369,11 @@ class SimpleGMULayer(nn.Module):
             pred_final = pred_final.permute(2,0,1)
             
             err = torch.mean((y-pred_final)**2,dim=2)
-            # err = err.unsqueeze(2).unsqueeze(3)
-            if self.Type == 'exp':
-                return torch.exp(-err)
-            else:
-                return -err
+            err = err.unsqueeze(2).unsqueeze(3)
+            # if self.Type == 'exp':
+            return torch.exp(-err)
+            # else:
+                # return -err
 
 
 
@@ -484,18 +485,16 @@ class ResGMUMLP(nn.Module):
 
     def forward(self, x):
         # x = self.conv1(x)
-        x_errs1 = self.gmu1(x,self.training)
-    
-        x_errs2 = self.gmu2(x,self.training)
-        x_errs3 = self.gmu3(x,self.training)
-        x_errs4 = self.gmu4(x,self.training)
+        x_errs1 = self.gmu1(x)
+        x_errs2 = self.gmu2(x)
+        x_errs3 = self.gmu3(x)
+        x_errs4 = self.gmu4(x)
         x_errs = torch.hstack([x_errs1,x_errs2,x_errs3,x_errs4])
         out = self.bn1(x_errs)
         
         out = self.layer1(out)
         out = self.layer2(out)
-        if self.use_dropout:
-            out = self.drop(out)
+        out = self.drop(out)
         # out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
