@@ -1486,8 +1486,8 @@ def plot_all_ranks(all_ranks, num_slices):
     
     # Global font scaling
     plt.rcParams.update({
-        "axes.titlesize": 16,
-        "axes.labelsize": 14,
+        "axes.titlesize": 34,
+        "axes.labelsize": 30,
         "xtick.labelsize": 12,
         "ytick.labelsize": 12,
         "legend.fontsize": 12
@@ -1521,15 +1521,15 @@ def plot_all_ranks(all_ranks, num_slices):
             f'Min: {min_val:.2f}',
             f'Max: {max_val:.2f}',
         ))
-        ax.text(0.95, 0.95, textstr, transform=ax.transAxes,
-                fontsize=12, verticalalignment='top', horizontalalignment='right',
+        ax.text(0.98, 0.98, textstr, transform=ax.transAxes,
+                fontsize=24, verticalalignment='top', horizontalalignment='right',
                 bbox=dict(boxstyle="round", facecolor="white", alpha=0.8))
     
     # Hide unused subplot
     # fig.delaxes(axes[-1])
     
     # Add a global title
-    fig.suptitle("Stable Rank Distributions Across Slice Counts", fontsize=18, fontweight='bold')
+    # fig.suptitle("Stable Rank Distributions Across Slice Counts", fontsize=18, fontweight='bold')
     
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()
@@ -1586,7 +1586,7 @@ if __name__ == "__main__":
     decay_errors = 0
     dropping = 0 
     multiplier = int(1)
-    
+    rescale = 1.0
     decay_normal_crank = 0 
     
     layers = [25,50]
